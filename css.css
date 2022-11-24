@@ -1,0 +1,32 @@
+body {
+    margin: 0;
+}
+#container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    z-index: 2;
+}
+.idfk {
+    width: calc(100vw / 60);
+    height: 100vh;
+    z-index: 3;
+    background-color: blue;
+}
+#sky {
+    position: absolute;
+    background-color: darkgray;
+    width: 100vw;
+    height: 50vh;
+}
+#ground {
+    position: absolute;
+    background-color: lightgray;
+    width: 100vw;
+    height: 50vh;
+    top: 50vh;
+}
