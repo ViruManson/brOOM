@@ -1,2 +1,4 @@
 # brOOM
-A raytracing game made in javascript.
+A raycasting game made in javascript.
+
+Input.js By apeltsi

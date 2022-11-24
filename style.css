@@ -12,20 +12,19 @@ body {
     z-index: 2;
 }
 .idfk {
-    width: calc(100vw / 60);
     height: 100vh;
     z-index: 3;
-    background-color: blue;
+    background-color: rgb(1, 0, 0);
 }
 #sky {
     position: absolute;
-    background-color: darkgray;
+    background-color:cornflowerblue;
     width: 100vw;
     height: 50vh;
 }
 #ground {
     position: absolute;
-    background-color: lightgray;
+    background-color: darkgreen;
     width: 100vw;
     height: 50vh;
     top: 50vh;
