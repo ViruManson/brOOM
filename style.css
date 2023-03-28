@@ -29,3 +29,12 @@ body {
     height: 50vh;
     top: 50vh;
 }
+#gun {
+    position: absolute;
+    width: 228px;
+    height: 248px;
+    left: calc(50vw - 114px);
+    bottom: 0;
+    z-index: 4;
+    background-image: url(./assets/doodGUn.png);
+}
