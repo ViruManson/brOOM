@@ -22,8 +22,27 @@ let px=100,py=100,pdx=0,pdy=0,pa=0; //player position, deltaX, deltaY and angle 
 function Movement() {
     if (getKey("A")) {pa-=0.1; if(pa<   0) {pa+=2*PI;} pdx=Math.cos(pa)*5; pdy=Math.sin(pa)*5};
     if (getKey("D")) {pa+=0.1; if(pa>2*PI) {pa-=2*PI;} pdx=Math.cos(pa)*5; pdy=Math.sin(pa)*5};
-    if (getKey("W")) {px+=pdx; py+=pdy};
-    if (getKey("S")) {px-=pdx; py-=pdy};
+    
+    //Offset to point before player
+    let xo=0; if(pdx<0) { xo=(-32);} else{ xo=32;}
+    let yo=0; if(pdy<0) { yo=(-32);} else{ yo=32;}
+    //Gets the current square of the player (i think)
+    let ipx=Math.round(px/64), ipx_add_xo=Math.round((px+xo)/64), ipx_sub_xo=Math.round((px-xo)/64);
+    let ipy=Math.round(py/64), ipy_add_yo=Math.round((py+yo)/64), ipy_sub_yo=Math.round((py-yo)/64);
+
+    if (getKey("W"))
+    {
+        if(map[ipy*mapX        +  ipx_add_xo]==0) { px+=pdx;}
+        if(map[ipy_add_yo*mapX +  ipx       ]==0) { py+=pdy;}
+        //console.log(ipy*mapX  +  ipx_add_xo, px, py, ipx, ipx_add_xo, ipx_sub_xo, xo)
+    }
+    if (getKey("S"))
+    {
+        if(map[ipy*mapX        +  ipx_sub_xo]==0) { px-=pdx;}
+        if(map[ipy_sub_yo*mapX +  ipx       ]==0) { py-=pdy;}
+        //console.log(ipy*mapX  +  ipx_add_xo, px, py, ipx, ipx_add_xo, ipx_sub_xo, xo)
+    }
+    console.log("px",px/64,"py",py/64,)
 }
 
 
@@ -79,14 +98,14 @@ function drawRays3D() {
 
 let mapX=8,mapY=8,mapS=64;
 let map = [
-1, 1, 1, 1, 1, 1, 1, 1, 
-1, 0, 0, 0, 0, 0, 0, 1, 
-1, 0, 1, 0, 0, 0, 0, 1, 
-1, 0, 1, 0, 1, 1, 0, 1, 
-1, 0, 0, 0, 0, 1, 0, 1, 
-1, 0, 0, 0, 0, 1, 0, 1, 
-1, 0, 1, 1, 0, 0, 0, 1, 
-1, 1, 1, 1, 1, 1, 1, 1];
+    1, 1, 1, 1, 1, 1, 1, 1, 
+    1, 0, 0, 0, 0, 0, 0, 1, 
+    1, 0, 0, 0, 0, 0, 0, 1, 
+    1, 0, 0, 1, 1, 0, 0, 1, 
+    1, 0, 0, 1, 1, 0, 0, 1, 
+    1, 0, 0, 0, 0, 0, 0, 1, 
+    1, 0, 0, 0, 0, 0, 0, 1, 
+    1, 1, 1, 1, 1, 1, 1, 1];
 
 
 //Updates every 1ms
