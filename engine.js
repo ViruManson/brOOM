@@ -4,28 +4,30 @@ const PI = Math.PI
 const P2 = PI/2
 const P3 = 3*PI/2
 const DR = 0.0174533 //one degree in radians
-const numberOfRays = 100; //Can be changed to increase "resolution on the walls"
+const numberOfRays = 10; //Can be changed to increase "resolution on the walls"
 
 // Initializes the line things
-let Objects = [];
+let Collumns = [];
 for (let n = 0; n < numberOfRays; n++) {
-    Objects.push(document.createElement("div"));
-    document.getElementById("container").appendChild(Objects[n]);
-    Objects[n].style.width = 100/numberOfRays + "vw";
-
-    Objects[n].classList.add("collumn");
+    Collumns.push(document.createElement("div"));
+    document.getElementById("container").appendChild(Collumns[n]);
+    Collumns[n].style.width = 100/numberOfRays + "vw";
+    Collumns[n].classList.add("collumn");
+    Collumns[n].id = ("Collumn"+n)
 }
 
 
 let px=100,py=100,pdx=0,pdy=0,pa=0; //player position, deltaX, deltaY and angle of player
 
 function Movement() {
+    //rotates in radians if A or D is pressed
     if (getKey("A")) {pa-=0.1; if(pa<   0) {pa+=2*PI;} pdx=Math.cos(pa)*5; pdy=Math.sin(pa)*5};
     if (getKey("D")) {pa+=0.1; if(pa>2*PI) {pa-=2*PI;} pdx=Math.cos(pa)*5; pdy=Math.sin(pa)*5};
     
-    //Offset to point before player
+    //Offset to point infront of and behind player
     let xo=0; if(pdx<0) { xo=(-20);} else{ xo=20;}
     let yo=0; if(pdy<0) { yo=(-20);} else{ yo=20;}
+
     //Gets the current square of the player (i think) and some offsets for collision
     //Math.floor is to immitate int variables.
     let ipx=Math.floor(px/64), ipx_add_xo=Math.floor((px+xo)/64), ipx_sub_xo=Math.floor((px-xo)/64);
@@ -33,18 +35,16 @@ function Movement() {
 
     if (getKey("W"))
     {
+        //checks if the grid in front is empty, if so move forward
         if(map[ipy*mapX        +  ipx_add_xo]==0) { px+=pdx;}
         if(map[ipy_add_yo*mapX +  ipx       ]==0) { py+=pdy;}
-        //console.log(ipy*mapX  +  ipx_add_xo, px, py, ipx, ipx_add_xo, ipx_sub_xo, xo)
     }
     if (getKey("S"))
     {
+        //checks if the grid behind is empty, if so move backwards
         if(map[ipy*mapX        +  ipx_sub_xo]==0) { px-=pdx;}
         if(map[ipy_sub_yo*mapX +  ipx       ]==0) { py-=pdy;}
-        //console.log(ipy*mapX  +  ipx_add_xo, px, py, ipx, ipx_add_xo, ipx_sub_xo, xo)
     }
-    
-    console.log("px",px/64,"py",py/64,)
 }
 
 
@@ -57,6 +57,8 @@ function drawRays3D() {
     let r,mx,my,mp,dof;
     let rx,ry,ra,xo,yo,disT;
     ra=pa-DR*30; if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
+    let Points = [];
+    let PointIndex = 0;
     for(r=0;r<numberOfRays;r++) {
         // ----Check horizontal line----
         dof=0
@@ -90,11 +92,27 @@ function drawRays3D() {
         let ca=pa-ra; if(ca<0) {ca+=2*PI;} if(ca>2*PI) {ca-=2*PI;} disT=disT*Math.cos(ca); //fix fisheye
         let lineH=(mapS*100)/disT; if(lineH>100) {lineH=100;} //line height
         
-        Objects[r].style.height = lineH + "vh";
-        Objects[r].style.backgroundColor = "rgb"+Color;
+        //uppdates the collumns
+        Collumns[r].style.height = lineH + "vh";
+        //Collumns[r].style.backgroundColor = "rgb"+Color;
+        
+        //generates one frame of points
+        let y;    
+        for (y=0;y<lineH;y++) {
+            Points.push(document.createElement("div"));
+
+            document.getElementById("Collumn"+r).appendChild(Points[PointIndex]);
+            Points[PointIndex].style.width = 100/numberOfRays + "vw";
+            Points[PointIndex].style.height = 100/numberOfRays + "vw";
+
+            Points[PointIndex].classList.add("point");
+            Points[PointIndex].style.backgroundColor = "rgb"+Color;
+            PointIndex++;
+        }
 
         ra+=DR/(numberOfRays/60); if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
     }
+    Points = [];
 }
 
 
@@ -102,11 +120,11 @@ let mapX=8,mapY=8,mapS=64;
 let map = [
     1, 1, 1, 1, 1, 1, 1, 1, 
     1, 0, 0, 0, 0, 0, 0, 1, 
-    1, 0, 0, 0, 0, 0, 0, 1, 
-    1, 0, 0, 1, 1, 0, 0, 1, 
-    1, 0, 0, 1, 1, 0, 0, 1, 
-    1, 0, 0, 0, 0, 0, 0, 1, 
-    1, 0, 0, 0, 0, 0, 0, 1, 
+    1, 0, 1, 0, 0, 0, 0, 1, 
+    1, 0, 0, 0, 1, 1, 0, 1, 
+    1, 0, 1, 0, 0, 1, 0, 1, 
+    1, 0, 1, 0, 0, 1, 0, 1, 
+    1, 0, 0, 0, 0, 1, 0, 1, 
     1, 1, 1, 1, 1, 1, 1, 1
 ];
 
@@ -261,9 +279,10 @@ let All_Textures = [ //all 32x32 textures
 ]
 
 //Updates every 1ms
-mainLoop = setInterval(() => {
+let mainLoop = setInterval(() => {
     
     Movement();
     drawRays3D();
+    
 
 }, 5);

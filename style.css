@@ -14,6 +14,14 @@ body {
 .collumn {
     height: 100vh;
     z-index: 3;
+    /*background-color: rgb(1, 0, 0);*/
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+.point {
+    z-index: 4;
     background-color: rgb(1, 0, 0);
 }
 #sky {
