@@ -11,7 +11,7 @@ body {
     flex-direction: row;
     z-index: 2;
 }
-.collumn {
+.column {
     height: 100vh;
     z-index: 3;
     /*background-color: rgb(1, 0, 0);*/
@@ -22,7 +22,7 @@ body {
 }
 .point {
     z-index: 4;
-    background-color: rgb(1, 0, 0);
+    /*background-color: rgba(0, 0, 0, 0);*/
 }
 #sky {
     position: absolute;

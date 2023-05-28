@@ -4,16 +4,31 @@ const PI = Math.PI
 const P2 = PI/2
 const P3 = 3*PI/2
 const DR = 0.0174533 //one degree in radians
-const numberOfRays = 10; //Can be changed to increase "resolution on the walls"
+const numberOfRays = 60; //Can be changed to increase "resolution on the walls"
 
 // Initializes the line things
-let Collumns = [];
+let Columns = [];
+let PointArrays = [];
 for (let n = 0; n < numberOfRays; n++) {
-    Collumns.push(document.createElement("div"));
-    document.getElementById("container").appendChild(Collumns[n]);
-    Collumns[n].style.width = 100/numberOfRays + "vw";
-    Collumns[n].classList.add("collumn");
-    Collumns[n].id = ("Collumn"+n)
+    //creates columns
+    Columns.push(document.createElement("div"));
+    document.getElementById("container").appendChild(Columns[n]);
+    Columns[n].style.width = 100/numberOfRays + "vw";
+    Columns[n].classList.add("column");
+    Columns[n].id = ("Column"+n)
+
+    let y;
+    let Points = [];
+    //creates points, puts then in array and changes style
+    for (y=0;y<numberOfRays;y++) {
+        Points.push(document.createElement("div"));
+        document.getElementById("Column"+n).appendChild(Points[y]);
+        Points[y].style.width = 100/numberOfRays + "vw";
+        Points[y].style.height = 100/numberOfRays + "vh";
+        Points[y].style.backgroundColor = "rgb(0, 0, 0)"
+        Points[y].classList.add("point");
+    }
+    PointArrays.push(Points) //puts in larger array
 }
 
 
@@ -57,8 +72,6 @@ function drawRays3D() {
     let r,mx,my,mp,dof;
     let rx,ry,ra,xo,yo,disT;
     ra=pa-DR*30; if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
-    let Points = [];
-    let PointIndex = 0;
     for(r=0;r<numberOfRays;r++) {
         // ----Check horizontal line----
         dof=0
@@ -85,34 +98,25 @@ function drawRays3D() {
             if(mp>0 && mp<mapX*mapY && map[mp]==1) {vx=rx; vy=ry; disV=dist(px,py,vx,vy,ra); dof=8;} // hit wall
             else{rx+=xo; ry+=yo; dof+=1;} //next line
         }
-        if(disV<disH) {rx=vx; ry=vy; disT=disV; Color="(229.5, 0, 0)"}
-        if(disH<disV) {rx=hx; ry=hy; disT=disH; Color="(178.5, 0, 0)"}
+        if(disV<disH) {rx=vx; ry=vy; disT=disV; Color="(229.5, 0, 0, 1)"}
+        if(disH<disV) {rx=hx; ry=hy; disT=disH; Color="(178.5, 0, 0, 1)"}
 
         // ----Draw 3D walls----
         let ca=pa-ra; if(ca<0) {ca+=2*PI;} if(ca>2*PI) {ca-=2*PI;} disT=disT*Math.cos(ca); //fix fisheye
         let lineH=(mapS*100)/disT; if(lineH>100) {lineH=100;} //line height
         
-        //uppdates the collumns
-        Collumns[r].style.height = lineH + "vh";
-        //Collumns[r].style.backgroundColor = "rgb"+Color;
-        
-        //generates one frame of points
-        let y;    
-        for (y=0;y<lineH;y++) {
-            Points.push(document.createElement("div"));
-
-            document.getElementById("Collumn"+r).appendChild(Points[PointIndex]);
-            Points[PointIndex].style.width = 100/numberOfRays + "vw";
-            Points[PointIndex].style.height = 100/numberOfRays + "vw";
-
-            Points[PointIndex].classList.add("point");
-            Points[PointIndex].style.backgroundColor = "rgb"+Color;
-            PointIndex++;
+        //uppdates the Points
+        for (let i = 0; i<numberOfRays; i++) {
+            PointArrays[r][i].style.visibility = "hidden"; //hides all the points
         }
-
+        //loops through the points that are located where the "column line height based on distance thing" would be
+        for (let PointInColumnIndex = numberOfRays/2 - Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex < numberOfRays/2 + Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex++) {
+            PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgba"+Color; //changes the color of relevant points
+            PointArrays[r][PointInColumnIndex].style.visibility = "visible"; //makes relevant points visible
+        }
+        
         ra+=DR/(numberOfRays/60); if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
     }
-    Points = [];
 }
 
 
