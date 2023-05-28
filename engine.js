@@ -131,7 +131,6 @@ function drawRays3D() {
         //uppdates the Points
         for (let i = 0; i<numberOfRays; i++) {
             PointArrays[r][i].style.backgroundColor = "rgb(0, 0, 0)";
-            PointArrays[r][i].style.visibility = "hidden"; //hides all the points
         }
         //adds texture to the walls, also fixes their dirrection and shading
         let ty = ty_off*ty_step+hmt*32;
@@ -147,19 +146,29 @@ function drawRays3D() {
             if(hmt==2){ Color = `(${c/2}, ${c/2}, ${c})`;} //window blue
             if(hmt==3){ Color = `(${c/2}, ${c}, ${c/2})`;} //door green
             PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
-            PointArrays[r][PointInColumnIndex].style.visibility = "visible"; //makes relevant points visible
             ty+=ty_step; //iterates the y value of texture map
         }
         
         // ----Draw floors----
         for(let PointInColumnIndex = numberOfRays/2 + Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex < numberOfRays; PointInColumnIndex++) {
             let dy=PointInColumnIndex-(100/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
-            tx=Math.round(px/2 + Math.cos(deg)*48.375*32/dy/raFix);
-            ty=Math.round((py+6)/2 + Math.sin(deg)*48.375*32/dy/raFix);
-            let c = 255/All_Textures[(Math.floor(ty)&31)*32 + Math.floor(tx)] * 0.7; //changes colors of the current point to the right value form the texture map
-            Color = `(${c}, ${c}, ${c})`;
+            tx=px/2 + Math.cos(deg)*48.375*32/dy/raFix;
+            ty=py/2 + Math.sin(deg)*48.375*32/dy/raFix;
+            let mp=mapF[Math.floor(ty/32)*mapX+Math.floor(tx/32)]*32*32
+            let c = 255/All_Textures[(Math.floor(ty)&31)*32 + (Math.floor(tx)&31)+mp] * 0.7; //changes colors of the current point to the right value form the texture map
+            Color = `(${c/1.3}, ${c/1.3}, ${c})`;
             PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
-            PointArrays[r][PointInColumnIndex].style.visibility = "visible"; //makes relevant points visible
+        }
+
+        //----Draw ceiling----
+        for(let PointInColumnIndex = 0; PointInColumnIndex < numberOfRays/2 - Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex++) {
+            let dy=PointInColumnIndex-(100/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
+            tx=px/2 - Math.cos(deg)*48.375*32/dy/raFix;
+            ty=py/2 - Math.sin(deg)*48.375*32/dy/raFix;
+            let mp=mapC[Math.floor(ty/32)*mapX+Math.floor(tx/32)]*32*32
+            let c = 255/All_Textures[(Math.floor(ty)&31)*32 + (Math.floor(tx)&31)+mp] * 0.7; //changes colors of the current point to the right value form the texture map
+            Color = `(${c/2}, ${c/1.2}, ${c/2})`;
+            PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
         }
 
         ra+=DR/(numberOfRays/FOV); if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
@@ -169,24 +178,46 @@ function drawRays3D() {
 
 let mapX=8,mapY=8,mapS=64;
 let mapW = [ //map of the walls
-    1,1,1,1,1,1,1,2, 
-    1,0,0,0,0,0,0,1, 
-    1,0,0,0,0,0,0,1, 
-    1,0,0,0,0,0,0,1, 
-    1,0,0,0,0,2,0,1, 
-    1,0,1,0,2,2,0,1, 
-    1,0,0,0,0,0,0,1, 
-    1,1,1,1,1,1,1,1,
+    3,3,3,3,3,3,3,3, 
+    3,0,0,0,0,0,0,3, 
+    3,0,0,0,0,0,0,4, 
+    3,0,0,0,0,0,0,3, 
+    3,0,0,0,2,2,2,3, 
+    3,0,0,0,4,0,0,3, 
+    3,0,0,0,2,0,0,3, 
+    3,3,3,3,3,3,3,3,
 ];
+
+let mapF = [ //map of floor
+    0,0,0,0,0,0,0,0, 
+    0,1,1,2,2,2,2,0, 
+    0,1,1,2,2,2,2,0, 
+    0,2,1,2,2,2,2,0, 
+    0,2,1,2,0,0,0,0, 
+    0,2,1,1,0,0,0,0, 
+    0,2,2,2,0,0,0,0, 
+    0,0,0,0,0,0,0,0,
+]
+
+let mapC = [ //map of ceiling
+    0,0,0,0,0,0,0,0, 
+    0,0,0,0,0,0,0,0, 
+    0,0,0,0,0,0,0,0, 
+    0,0,0,0,0,0,0,0, 
+    0,0,0,0,0,0,0,0, 
+    0,0,0,0,0,0,0,0, 
+    0,0,0,0,0,0,0,0, 
+    0,0,0,0,0,0,0,0,
+]
 
 let All_Textures = [ //all 32x32 textures
     //Checkerboard
     0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
     0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
-    0,0,0,0,0,1,1,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
-    0,0,1,1,1,1,1,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
-    0,0,1,1,1,1,1,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
-    0,0,0,0,0,1,1,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
+    0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
     0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
     0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1, 0,0,0,0,0,0,0,0, 1,1,1,1,1,1,1,1,
 
