@@ -4,7 +4,14 @@ const PI = Math.PI
 const P2 = PI/2
 const P3 = 3*PI/2
 const DR = 0.0174533 //one degree in radians
-const numberOfRays = 90; //Can be changed to increase "resolution on the walls"
+const numberOfRays = 100; //Can be changed to increase "resolution on the walls"     //but actually should be 100 so that the textures arent messed up.
+const FOV = 60; //kind of but not really
+
+function fixAng(input) {
+    if(input<   0) {input+=2*PI;}
+    if(input>2*PI) {input-=2*PI;} 
+    return input;
+}
 
 // Initializes the line things
 let Columns = [];
@@ -15,7 +22,7 @@ for (let n = 0; n < numberOfRays; n++) {
     document.getElementById("container").appendChild(Columns[n]);
     Columns[n].style.width = 100/numberOfRays + "vw";
     Columns[n].classList.add("column");
-    Columns[n].id = ("Column"+n)
+    Columns[n].id = ("Column"+n);
 
     let y;
     let Points = [];
@@ -25,15 +32,13 @@ for (let n = 0; n < numberOfRays; n++) {
         document.getElementById("Column"+n).appendChild(Points[y]);
         Points[y].style.width = 100/numberOfRays + "vw";
         Points[y].style.height = 100/numberOfRays + "vh";
-        Points[y].style.backgroundColor = "rgb(0, 0, 0)"
+        Points[y].style.backgroundColor = "rgb(0, 0, 0)";
         Points[y].classList.add("point");
     }
     PointArrays.push(Points) //puts in larger array
 }
 
-
-let px=100,py=100,pdx=0,pdy=0,pa=0; //player position, deltaX, deltaY and angle of player
-
+let px=128,py=128,pdx=0,pdy=0,pa=0; //player position, deltaX, deltaY and angle of player
 function Movement() {
     //rotates in radians if A or D is pressed
     if (getKey("A")) {pa-=0.1; if(pa<   0) {pa+=2*PI;} pdx=Math.cos(pa)*5; pdy=Math.sin(pa)*5};
@@ -62,6 +67,19 @@ function Movement() {
     }
 }
 
+function Interactions() {
+    //Offset to point infront of and behind player
+    let Reach = 25;
+    let xo=0; if(pdx<0) { xo=(-Reach);} else{ xo=Reach;}
+    let yo=0; if(pdy<0) { yo=(-Reach);} else{ yo=Reach;}
+    let ipx=Math.floor(px/64), ipx_add_xo=Math.floor((px+xo)/64);
+    let ipy=Math.floor(py/64), ipy_add_yo=Math.floor((py+yo)/64);
+
+    if (getKey("F")) {
+        if(mapW[ipy_add_yo*mapX+ipx_add_xo]==4) { mapW[ipy_add_yo*mapX+ipx_add_xo]=0;}
+    }
+}
+
 
 function dist(ax,ay,bx,by,ang) {
     return(Math.sqrt((bx-ax)*(bx-ax) + (by-ay)*(by-ay)));
@@ -71,7 +89,7 @@ function drawRays3D() {
     let Color;
     let r,mx,my,mp,dof;
     let rx,ry,ra,xo,yo,disT;
-    ra=pa-DR*30; if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
+    ra=pa-DR*(FOV/2); if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
     for(r=0;r<numberOfRays;r++) {
         let vmt=0,hmt=0; //vertical and horizontal map texture number
 
@@ -100,55 +118,65 @@ function drawRays3D() {
             if(mp>0 && mp<mapX*mapY && mapW[mp]>0) { vmt=mapW[mp]-1; vx=rx; vy=ry; disV=dist(px,py,vx,vy,ra); dof=8;} // hit wall
             else{rx+=xo; ry+=yo; dof+=1;} //next line
         }
-        
         let Shade = 1;
         if(disV<disH) { hmt=vmt; rx=vx; ry=vy; disT=disV; Shade=0.5}
         if(disH<disV) {rx=hx; ry=hy; disT=disH;}
 
-        // ----Draw 3D walls----
+        // ----Draw walls----
         let ca=pa-ra; if(ca<0) {ca+=2*PI;} if(ca>2*PI) {ca-=2*PI;} disT=disT*Math.cos(ca); //fix fisheye
         let lineH=(mapS*100)/disT;
         let ty_step = 32/lineH;
         let ty_off = 0;
         if(lineH>100) {ty_off = (lineH-100)/2; lineH=100;} //line height
-        
         //uppdates the Points
         for (let i = 0; i<numberOfRays; i++) {
             PointArrays[r][i].style.backgroundColor = "rgb(0, 0, 0)";
             PointArrays[r][i].style.visibility = "hidden"; //hides all the points
         }
-        
         //adds texture to the walls, also fixes their dirrection and shading
         let ty = ty_off*ty_step+hmt*32;
         let tx;
         if(Shade==1) { tx=Math.floor(rx/2)%32; if(ra<PI) { tx=31-tx;}} //x walls
         else         { tx=Math.floor(ry/2)%32; if(ra>P2 && ra<P3) { tx=31-tx;}} // y walls
-
-
         //loops through the points that are located where the "column line height based on distance thing" would be
         for (let PointInColumnIndex = numberOfRays/2 - Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex < numberOfRays/2 + Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex++) {
-            let c = 255/All_Textures[Math.floor(ty)*32 + Math.floor(tx)] * Shade; //changes colors of the current point to the right value form tehh texture map
-            Color = `(${c}, ${c}, ${c})`
+            let c = 255/All_Textures[Math.floor(ty)*32 + Math.floor(tx)] * Shade; //changes colors of the current point to the right value form the texture map
+            ////Color = `(${c}, ${c}, ${c})`
+            if(hmt==0){ Color = `(${c}, ${c/2}, ${c/2})`;} //checkerboard red
+            if(hmt==1){ Color = `(${c}, ${c}, ${c/2})`;} //Brick yellow
+            if(hmt==2){ Color = `(${c/2}, ${c/2}, ${c})`;} //window blue
+            if(hmt==3){ Color = `(${c/2}, ${c}, ${c/2})`;} //door green
             PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
             PointArrays[r][PointInColumnIndex].style.visibility = "visible"; //makes relevant points visible
             ty+=ty_step; //iterates the y value of texture map
         }
         
-        ra+=DR/(numberOfRays/60); if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
+        // ----Draw floors----
+        for(let PointInColumnIndex = numberOfRays/2 + Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex < numberOfRays; PointInColumnIndex++) {
+            let dy=PointInColumnIndex-(100/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
+            tx=Math.round(px/2 + Math.cos(deg)*48.375*32/dy/raFix);
+            ty=Math.round((py+6)/2 + Math.sin(deg)*48.375*32/dy/raFix);
+            let c = 255/All_Textures[(Math.floor(ty)&31)*32 + Math.floor(tx)] * 0.7; //changes colors of the current point to the right value form the texture map
+            Color = `(${c}, ${c}, ${c})`;
+            PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
+            PointArrays[r][PointInColumnIndex].style.visibility = "visible"; //makes relevant points visible
+        }
+
+        ra+=DR/(numberOfRays/FOV); if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
     }
 }
 
 
 let mapX=8,mapY=8,mapS=64;
 let mapW = [ //map of the walls
-    2,2,2,2,3,2,2,2, 
-    4,0,0,0,0,0,0,2, 
-    2,1,1,1,1,0,1,2, 
-    2,0,0,0,0,0,0,2, 
-    2,0,0,0,0,0,0,2, 
-    3,0,0,0,0,0,0,3, 
-    2,0,0,0,0,0,0,2, 
-    2,2,2,3,2,2,2,2,
+    1,1,1,1,1,1,1,2, 
+    1,0,0,0,0,0,0,1, 
+    1,0,0,0,0,0,0,1, 
+    1,0,0,0,0,0,0,1, 
+    1,0,0,0,0,2,0,1, 
+    1,0,1,0,2,2,0,1, 
+    1,0,0,0,0,0,0,1, 
+    1,1,1,1,1,1,1,1,
 ];
 
 let All_Textures = [ //all 32x32 textures
@@ -306,6 +334,6 @@ let mainLoop = setInterval(() => {
     
     Movement();
     drawRays3D();
+    Interactions();
     
-
 }, 5);
