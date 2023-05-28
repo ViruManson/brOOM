@@ -51,14 +51,14 @@ function Movement() {
     if (getKey("W"))
     {
         //checks if the grid in front is empty, if so move forward
-        if(map[ipy*mapX        +  ipx_add_xo]==0) { px+=pdx;}
-        if(map[ipy_add_yo*mapX +  ipx       ]==0) { py+=pdy;}
+        if(mapW[ipy*mapX        +  ipx_add_xo]==0) { px+=pdx;}
+        if(mapW[ipy_add_yo*mapX +  ipx       ]==0) { py+=pdy;}
     }
     if (getKey("S"))
     {
         //checks if the grid behind is empty, if so move backwards
-        if(map[ipy*mapX        +  ipx_sub_xo]==0) { px-=pdx;}
-        if(map[ipy_sub_yo*mapX +  ipx       ]==0) { py-=pdy;}
+        if(mapW[ipy*mapX        +  ipx_sub_xo]==0) { px-=pdx;}
+        if(mapW[ipy_sub_yo*mapX +  ipx       ]==0) { py-=pdy;}
     }
 }
 
@@ -73,6 +73,8 @@ function drawRays3D() {
     let rx,ry,ra,xo,yo,disT;
     ra=pa-DR*30; if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
     for(r=0;r<numberOfRays;r++) {
+        let vmt=0,hmt=0; //vertical and horizontal map texture number
+
         // ----Check horizontal line----
         dof=0
         let disH=1000000,hx=px,hy=py;
@@ -82,7 +84,7 @@ function drawRays3D() {
         if(ra==0 || ra==PI) {rx=px; ry=py; dof=8;} //looking straight left or right
         while (dof<8) {
             mx=(rx)>>6; my=(ry)>>6; mp=my*mapX+mx;
-            if(mp>0 && mp<mapX*mapY && map[mp]==1) {hx=rx; hy=ry; disH=dist(px,py,hx,hy,ra); dof=8;} // hit wall
+            if(mp>0 && mp<mapX*mapY && mapW[mp]>0) { hmt=mapW[mp]-1; hx=rx; hy=ry; disH=dist(px,py,hx,hy,ra); dof=8;} // hit wall
             else{rx+=xo; ry+=yo; dof+=1;} //next line
         }
 
@@ -95,12 +97,12 @@ function drawRays3D() {
         if(ra==0 || ra==PI) {rx=px; ry=py; dof=8;} //looking straight up or down
         while (dof<8) {
             mx=(rx)>>6; my=(ry)>>6; mp=my*mapX+mx;
-            if(mp>0 && mp<mapX*mapY && map[mp]==1) {vx=rx; vy=ry; disV=dist(px,py,vx,vy,ra); dof=8;} // hit wall
+            if(mp>0 && mp<mapX*mapY && mapW[mp]>0) { vmt=mapW[mp]-1; vx=rx; vy=ry; disV=dist(px,py,vx,vy,ra); dof=8;} // hit wall
             else{rx+=xo; ry+=yo; dof+=1;} //next line
         }
         
         let Shade = 1;
-        if(disV<disH) {rx=vx; ry=vy; disT=disV; Shade=0.5}
+        if(disV<disH) { hmt=vmt; rx=vx; ry=vy; disT=disV; Shade=0.5}
         if(disH<disV) {rx=hx; ry=hy; disT=disH;}
 
         // ----Draw 3D walls----
@@ -117,7 +119,7 @@ function drawRays3D() {
         }
         
         //adds texture to the walls, also fixes their dirrection and shading
-        let ty = ty_off*ty_step;
+        let ty = ty_off*ty_step+hmt*32;
         let tx;
         if(Shade==1) { tx=Math.floor(rx/2)%32; if(ra<PI) { tx=31-tx;}} //x walls
         else         { tx=Math.floor(ry/2)%32; if(ra>P2 && ra<P3) { tx=31-tx;}} // y walls
@@ -138,15 +140,15 @@ function drawRays3D() {
 
 
 let mapX=8,mapY=8,mapS=64;
-let map = [
-    1, 1, 1, 1, 1, 1, 1, 1, 
-    1, 0, 0, 0, 0, 0, 0, 1, 
-    1, 0, 0, 0, 0, 0, 0, 1, 
-    1, 0, 1, 0, 1, 1, 0, 1, 
-    1, 0, 0, 0, 0, 0, 0, 1, 
-    1, 0, 1, 0, 1, 1, 0, 1, 
-    1, 0, 0, 0, 0, 0, 0, 1, 
-    1, 1, 1, 1, 1, 1, 1, 1
+let mapW = [ //map of the walls
+    2,2,2,2,3,2,2,2, 
+    4,0,0,0,0,0,0,2, 
+    2,1,1,1,1,0,1,2, 
+    2,0,0,0,0,0,0,2, 
+    2,0,0,0,0,0,0,2, 
+    3,0,0,0,0,0,0,3, 
+    2,0,0,0,0,0,0,2, 
+    2,2,2,3,2,2,2,2,
 ];
 
 let All_Textures = [ //all 32x32 textures
