@@ -4,7 +4,7 @@ const PI = Math.PI
 const P2 = PI/2
 const P3 = 3*PI/2
 const DR = 0.0174533 //one degree in radians
-const numberOfRays = 60; //Can be changed to increase "resolution on the walls"
+const numberOfRays = 90; //Can be changed to increase "resolution on the walls"
 
 // Initializes the line things
 let Columns = [];
@@ -98,21 +98,38 @@ function drawRays3D() {
             if(mp>0 && mp<mapX*mapY && map[mp]==1) {vx=rx; vy=ry; disV=dist(px,py,vx,vy,ra); dof=8;} // hit wall
             else{rx+=xo; ry+=yo; dof+=1;} //next line
         }
-        if(disV<disH) {rx=vx; ry=vy; disT=disV; Color="(229.5, 0, 0, 1)"}
-        if(disH<disV) {rx=hx; ry=hy; disT=disH; Color="(178.5, 0, 0, 1)"}
+        
+        let Shade = 1;
+        if(disV<disH) {rx=vx; ry=vy; disT=disV; Shade=0.5}
+        if(disH<disV) {rx=hx; ry=hy; disT=disH;}
 
         // ----Draw 3D walls----
         let ca=pa-ra; if(ca<0) {ca+=2*PI;} if(ca>2*PI) {ca-=2*PI;} disT=disT*Math.cos(ca); //fix fisheye
-        let lineH=(mapS*100)/disT; if(lineH>100) {lineH=100;} //line height
+        let lineH=(mapS*100)/disT;
+        let ty_step = 32/lineH;
+        let ty_off = 0;
+        if(lineH>100) {ty_off = (lineH-100)/2; lineH=100;} //line height
         
         //uppdates the Points
         for (let i = 0; i<numberOfRays; i++) {
+            PointArrays[r][i].style.backgroundColor = "rgb(0, 0, 0)";
             PointArrays[r][i].style.visibility = "hidden"; //hides all the points
         }
+        
+        //adds texture to the walls, also fixes their dirrection and shading
+        let ty = ty_off*ty_step;
+        let tx;
+        if(Shade==1) { tx=Math.floor(rx/2)%32; if(ra<PI) { tx=31-tx;}} //x walls
+        else         { tx=Math.floor(ry/2)%32; if(ra>P2 && ra<P3) { tx=31-tx;}} // y walls
+
+
         //loops through the points that are located where the "column line height based on distance thing" would be
         for (let PointInColumnIndex = numberOfRays/2 - Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex < numberOfRays/2 + Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex++) {
-            PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgba"+Color; //changes the color of relevant points
+            let c = 255/All_Textures[Math.floor(ty)*32 + Math.floor(tx)] * Shade; //changes colors of the current point to the right value form tehh texture map
+            Color = `(${c}, ${c}, ${c})`
+            PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
             PointArrays[r][PointInColumnIndex].style.visibility = "visible"; //makes relevant points visible
+            ty+=ty_step; //iterates the y value of texture map
         }
         
         ra+=DR/(numberOfRays/60); if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
@@ -124,11 +141,11 @@ let mapX=8,mapY=8,mapS=64;
 let map = [
     1, 1, 1, 1, 1, 1, 1, 1, 
     1, 0, 0, 0, 0, 0, 0, 1, 
-    1, 0, 1, 0, 0, 0, 0, 1, 
-    1, 0, 0, 0, 1, 1, 0, 1, 
-    1, 0, 1, 0, 0, 1, 0, 1, 
-    1, 0, 1, 0, 0, 1, 0, 1, 
-    1, 0, 0, 0, 0, 1, 0, 1, 
+    1, 0, 0, 0, 0, 0, 0, 1, 
+    1, 0, 1, 0, 1, 1, 0, 1, 
+    1, 0, 0, 0, 0, 0, 0, 1, 
+    1, 0, 1, 0, 1, 1, 0, 1, 
+    1, 0, 0, 0, 0, 0, 0, 1, 
     1, 1, 1, 1, 1, 1, 1, 1
 ];
 
