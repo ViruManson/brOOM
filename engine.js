@@ -20,7 +20,7 @@ for (let n = 0; n < numberOfRays; n++) {
     //creates columns
     Columns.push(document.createElement("div"));
     document.getElementById("container").appendChild(Columns[n]);
-    Columns[n].style.width = 100/numberOfRays + "vw";
+    Columns[n].style.width = 100/numberOfRays + "%";
     Columns[n].classList.add("column");
     Columns[n].id = ("Column"+n);
 
@@ -30,8 +30,8 @@ for (let n = 0; n < numberOfRays; n++) {
     for (y=0;y<numberOfRays;y++) {
         Points.push(document.createElement("div"));
         document.getElementById("Column"+n).appendChild(Points[y]);
-        Points[y].style.width = 100/numberOfRays + "vw";
-        Points[y].style.height = 100/numberOfRays + "vh";
+        Points[y].style.width = "100%";
+        Points[y].style.height = 100/numberOfRays + "%";
         Points[y].style.backgroundColor = "rgb(0, 0, 0)";
         Points[y].classList.add("point");
     }
@@ -178,23 +178,23 @@ function drawRays3D() {
 
 let mapX=8,mapY=8,mapS=64;
 let mapW = [ //map of the walls
-    3,3,3,3,3,3,3,3, 
-    3,0,0,0,0,0,0,3, 
-    3,0,0,0,0,0,0,4, 
-    3,0,0,0,0,0,0,3, 
-    3,0,0,0,2,2,2,3, 
-    3,0,0,0,4,0,0,3, 
-    3,0,0,0,2,0,0,3, 
-    3,3,3,3,3,3,3,3,
+    2,2,2,2,2,4,2,2, 
+    2,0,0,0,3,0,0,2, 
+    2,0,0,0,0,1,0,4, 
+    4,0,0,0,0,1,0,2, 
+    2,0,4,2,0,0,0,2, 
+    2,0,0,0,0,3,0,2, 
+    2,0,0,0,3,0,0,2, 
+    2,2,2,2,2,2,2,2,
 ];
 
 let mapF = [ //map of floor
     0,0,0,0,0,0,0,0, 
-    0,1,1,2,2,2,2,0, 
-    0,1,1,2,2,2,2,0, 
-    0,2,1,2,2,2,2,0, 
-    0,2,1,2,0,0,0,0, 
-    0,2,1,1,0,0,0,0, 
+    0,2,2,2,2,2,2,0, 
+    0,2,2,2,2,2,2,0, 
+    0,2,2,2,2,2,2,0, 
+    0,2,2,2,0,0,0,0, 
+    0,2,2,2,0,0,0,0, 
     0,2,2,2,0,0,0,0, 
     0,0,0,0,0,0,0,0,
 ]
@@ -202,9 +202,9 @@ let mapF = [ //map of floor
 let mapC = [ //map of ceiling
     0,0,0,0,0,0,0,0, 
     0,0,0,0,0,0,0,0, 
-    0,0,0,0,0,0,0,0, 
-    0,0,0,0,0,0,0,0, 
-    0,0,0,0,0,0,0,0, 
+    0,0,0,0,3,0,0,0, 
+    0,0,0,0,3,0,0,0, 
+    0,0,0,0,3,0,0,0, 
     0,0,0,0,0,0,0,0, 
     0,0,0,0,0,0,0,0, 
     0,0,0,0,0,0,0,0,
