@@ -34,13 +34,14 @@ body {
     background-size: 10%;
     display: flex;
     justify-content: center;
-    flex-direction: column;
+    flex-direction: row;
 }
 #bar2 {
+    position: absolute;
     background-color: black;
     z-index: 4;
-    width: 100%;
-    height: 10vh%;
+    width: 60%;
+    height: 100%;
 }
 .column {
     height: 100vh;
