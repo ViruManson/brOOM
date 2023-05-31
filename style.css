@@ -38,7 +38,7 @@ body {
 }
 #bar2 {
     position: absolute;
-    background-color: black;
+    /*background-color: black;*/
     z-index: 4;
     width: 60%;
     height: 100%;
@@ -79,5 +79,5 @@ body {
     bottom: 10%;
     z-index: 4;
     background-image: url(./assets/doodGUn.png);
-    visibility: visible;
+    visibility: hidden;
 }

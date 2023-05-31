@@ -125,7 +125,7 @@ function drawRays3D() {
         // ----Draw walls----
         let ca=pa-ra; if(ca<0) {ca+=2*PI;} if(ca>2*PI) {ca-=2*PI;} disT=disT*Math.cos(ca); //fix fisheye
         let lineH=(mapS*100)/disT;
-        let ty_step = 32/lineH;
+        let ty_step = 32/lineH*100/numberOfRays;
         let ty_off = 0;
         if(lineH>100) {ty_off = (lineH-100)/2; lineH=100;} //line height
         //uppdates the Points
@@ -151,7 +151,7 @@ function drawRays3D() {
         
         // ----Draw floors----
         for(let PointInColumnIndex = numberOfRays/2 + Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex < numberOfRays; PointInColumnIndex++) {
-            let dy=PointInColumnIndex-(100/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
+            let dy=PointInColumnIndex-(numberOfRays/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
             tx=px/2 + Math.cos(deg)*48.375*32/dy/raFix;
             ty=py/2 + Math.sin(deg)*48.375*32/dy/raFix;
             let mp=mapF[Math.floor(ty/32)*mapX+Math.floor(tx/32)]*32*32
@@ -162,7 +162,7 @@ function drawRays3D() {
 
         //----Draw ceiling----
         for(let PointInColumnIndex = 0; PointInColumnIndex < numberOfRays/2 - Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex++) {
-            let dy=PointInColumnIndex-(100/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
+            let dy=PointInColumnIndex-(numberOfRays/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
             tx=px/2 - Math.cos(deg)*48.375*32/dy/raFix;
             ty=py/2 - Math.sin(deg)*48.375*32/dy/raFix;
             let mp=mapC[Math.floor(ty/32)*mapX+Math.floor(tx/32)]*32*32
