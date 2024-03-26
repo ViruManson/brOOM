@@ -6,6 +6,18 @@ const P3 = 3*PI/2
 const DR = 0.0174533 //one degree in radians
 const numberOfRays = 100; //Can be changed to increase "resolution on the walls"     //but actually should be 100 so that the textures arent messed up.
 const FOV = 60; //kind of but not really
+const canvas = document.getElementById("screen");
+const ctx = canvas.getContext("2d");
+
+const pointWidth = 100/numberOfRays *3 //temporary values
+const pointHeight = 100/numberOfRays *1.5 //temporary values
+/*
+const pointWidth = canvas.clientWidth / (numberOfRays * 2);
+const pointHeight = canvas.clientHeight / (numberOfRays*2);
+*/
+console.log(document.getElementById("screen").clientWidth)
+console.log(pointWidth, pointHeight)
+
 
 function fixAng(input) {
     if(input<   0) {input+=2*PI;}
@@ -13,6 +25,7 @@ function fixAng(input) {
     return input;
 }
 
+/*
 // Initializes the line things
 let Columns = [];
 let PointArrays = [];
@@ -37,6 +50,7 @@ for (let n = 0; n < numberOfRays; n++) {
     }
     PointArrays.push(Points) //puts in larger array
 }
+*/
 
 let px=128,py=128,pdx=0,pdy=0,pa=0; //player position, deltaX, deltaY and angle of player
 function Movement() {
@@ -65,6 +79,7 @@ function Movement() {
         if(mapW[ipy*mapX        +  ipx_sub_xo]==0) { px-=pdx;}
         if(mapW[ipy_sub_yo*mapX +  ipx       ]==0) { py-=pdy;}
     }
+    
 }
 
 function Interactions() {
@@ -83,6 +98,13 @@ function Interactions() {
 
 function dist(ax,ay,bx,by,ang) {
     return(Math.sqrt((bx-ax)*(bx-ax) + (by-ay)*(by-ay)));
+}
+
+function drawCanvasPixel(x, y, Color) {
+    ctx.strokeStyle = "rgb"+Color;
+    ctx.fillStyle = "rgb"+Color;
+    ctx.fillRect(x*pointWidth, y*pointHeight, pointWidth, pointHeight);
+    ctx.stroke();
 }
 
 function drawRays3D() {
@@ -129,9 +151,11 @@ function drawRays3D() {
         let ty_off = 0;
         if(lineH>100) {ty_off = (lineH-100)/2; lineH=100;} //line height
         //uppdates the Points
+        /*
         for (let i = 0; i<numberOfRays; i++) {
             PointArrays[r][i].style.backgroundColor = "rgb(0, 0, 0)";
         }
+        */
         //adds texture to the walls, also fixes their dirrection and shading
         let ty = ty_off*ty_step+hmt*32;
         let tx;
@@ -145,7 +169,11 @@ function drawRays3D() {
             if(hmt==1){ Color = `(${c}, ${c}, ${c/2})`;} //Brick yellow
             if(hmt==2){ Color = `(${c/2}, ${c/2}, ${c})`;} //window blue
             if(hmt==3){ Color = `(${c/2}, ${c}, ${c/2})`;} //door green
+
+            /*
             PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
+            */
+            drawCanvasPixel(r, PointInColumnIndex, Color);
             ty+=ty_step; //iterates the y value of texture map
         }
         
@@ -157,7 +185,10 @@ function drawRays3D() {
             let mp=mapF[Math.floor(ty/32)*mapX+Math.floor(tx/32)]*32*32
             let c = 255/All_Textures[(Math.floor(ty)&31)*32 + (Math.floor(tx)&31)+mp] * 0.7; //changes colors of the current point to the right value form the texture map
             Color = `(${c/1.3}, ${c/1.3}, ${c})`;
+            /*
             PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
+            */
+            drawCanvasPixel(r, PointInColumnIndex, Color);
         }
 
         //----Draw ceiling----
@@ -168,7 +199,10 @@ function drawRays3D() {
             let mp=mapC[Math.floor(ty/32)*mapX+Math.floor(tx/32)]*32*32
             let c = 255/All_Textures[(Math.floor(ty)&31)*32 + (Math.floor(tx)&31)+mp] * 0.7; //changes colors of the current point to the right value form the texture map
             Color = `(${c/2}, ${c/1.2}, ${c/2})`;
+            /*
             PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
+            */
+            drawCanvasPixel(r, PointInColumnIndex, Color);
         }
 
         ra+=DR/(numberOfRays/FOV); if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
