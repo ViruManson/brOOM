@@ -395,10 +395,11 @@ let All_Textures = [ //all 32x32 textures
 ]
 
 //Updates every 1ms
-let mainLoop = setInterval(() => {
-    
+function frame() {   
     Movement();
     drawRays3D();
     Interactions();
-    
-}, 5);
+    requestAnimationFrame(frame);
+}
+
+requestAnimationFrame(frame);
