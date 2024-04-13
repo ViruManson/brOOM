@@ -6,36 +6,19 @@ const P3 = 3*PI/2
 const DR = 0.0174533 //one degree in radians
 const numberOfRays = 100; //Can be changed to increase "resolution on the walls"     //but actually should be 100 so that the textures arent messed up.
 const FOV = 60; //kind of but not really
+const canvas = document.getElementById("screen");
+const ctx = canvas.getContext("2d", { alpha: false });
+
+
+
+//with 100 rays, resolution becomes 1280x720
+const pointWidth = 12.8
+const pointHeight = 7.2
 
 function fixAng(input) {
     if(input<   0) {input+=2*PI;}
     if(input>2*PI) {input-=2*PI;} 
     return input;
-}
-
-// Initializes the line things
-let Columns = [];
-let PointArrays = [];
-for (let n = 0; n < numberOfRays; n++) {
-    //creates columns
-    Columns.push(document.createElement("div"));
-    document.getElementById("container").appendChild(Columns[n]);
-    Columns[n].style.width = 100/numberOfRays + "vw";
-    Columns[n].classList.add("column");
-    Columns[n].id = ("Column"+n);
-
-    let y;
-    let Points = [];
-    //creates points, puts then in array and changes style
-    for (y=0;y<numberOfRays;y++) {
-        Points.push(document.createElement("div"));
-        document.getElementById("Column"+n).appendChild(Points[y]);
-        Points[y].style.width = 100/numberOfRays + "vw";
-        Points[y].style.height = 100/numberOfRays + "vh";
-        Points[y].style.backgroundColor = "rgb(0, 0, 0)";
-        Points[y].classList.add("point");
-    }
-    PointArrays.push(Points) //puts in larger array
 }
 
 let px=128,py=128,pdx=0,pdy=0,pa=0; //player position, deltaX, deltaY and angle of player
@@ -65,6 +48,7 @@ function Movement() {
         if(mapW[ipy*mapX        +  ipx_sub_xo]==0) { px-=pdx;}
         if(mapW[ipy_sub_yo*mapX +  ipx       ]==0) { py-=pdy;}
     }
+    
 }
 
 function Interactions() {
@@ -80,9 +64,14 @@ function Interactions() {
     }
 }
 
-
 function dist(ax,ay,bx,by,ang) {
     return(Math.sqrt((bx-ax)*(bx-ax) + (by-ay)*(by-ay)));
+}
+
+function drawCanvasPixel(x, y, Color) {
+    ctx.fillStyle = "rgb"+Color;
+    ctx.fillRect(x*pointWidth, y*pointHeight, pointWidth, pointHeight);
+    ctx.fillStyle = "rgb(0,0,0)"; //reverts color to black after a fill. Which tixes it in some way
 }
 
 function drawRays3D() {
@@ -125,13 +114,10 @@ function drawRays3D() {
         // ----Draw walls----
         let ca=pa-ra; if(ca<0) {ca+=2*PI;} if(ca>2*PI) {ca-=2*PI;} disT=disT*Math.cos(ca); //fix fisheye
         let lineH=(mapS*100)/disT;
-        let ty_step = 32/lineH;
+        let ty_step = 32/lineH*100/numberOfRays;
         let ty_off = 0;
         if(lineH>100) {ty_off = (lineH-100)/2; lineH=100;} //line height
-        //uppdates the Points
-        for (let i = 0; i<numberOfRays; i++) {
-            PointArrays[r][i].style.backgroundColor = "rgb(0, 0, 0)";
-        }
+        
         //adds texture to the walls, also fixes their dirrection and shading
         let ty = ty_off*ty_step+hmt*32;
         let tx;
@@ -145,32 +131,31 @@ function drawRays3D() {
             if(hmt==1){ Color = `(${c}, ${c}, ${c/2})`;} //Brick yellow
             if(hmt==2){ Color = `(${c/2}, ${c/2}, ${c})`;} //window blue
             if(hmt==3){ Color = `(${c/2}, ${c}, ${c/2})`;} //door green
-            PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
+            drawCanvasPixel(r, PointInColumnIndex, Color);
             ty+=ty_step; //iterates the y value of texture map
         }
-        
+    
         // ----Draw floors----
         for(let PointInColumnIndex = numberOfRays/2 + Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex < numberOfRays; PointInColumnIndex++) {
-            let dy=PointInColumnIndex-(100/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
+            let dy=PointInColumnIndex-(numberOfRays/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
             tx=px/2 + Math.cos(deg)*48.375*32/dy/raFix;
             ty=py/2 + Math.sin(deg)*48.375*32/dy/raFix;
             let mp=mapF[Math.floor(ty/32)*mapX+Math.floor(tx/32)]*32*32
             let c = 255/All_Textures[(Math.floor(ty)&31)*32 + (Math.floor(tx)&31)+mp] * 0.7; //changes colors of the current point to the right value form the texture map
             Color = `(${c/1.3}, ${c/1.3}, ${c})`;
-            PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
+            drawCanvasPixel(r, PointInColumnIndex, Color);
         }
-
+    
         //----Draw ceiling----
         for(let PointInColumnIndex = 0; PointInColumnIndex < numberOfRays/2 - Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex++) {
-            let dy=PointInColumnIndex-(100/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
+            let dy=PointInColumnIndex-(numberOfRays/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
             tx=px/2 - Math.cos(deg)*48.375*32/dy/raFix;
             ty=py/2 - Math.sin(deg)*48.375*32/dy/raFix;
             let mp=mapC[Math.floor(ty/32)*mapX+Math.floor(tx/32)]*32*32
             let c = 255/All_Textures[(Math.floor(ty)&31)*32 + (Math.floor(tx)&31)+mp] * 0.7; //changes colors of the current point to the right value form the texture map
-            Color = `(${c/2}, ${c/1.2}, ${c/2})`;
-            PointArrays[r][PointInColumnIndex].style.backgroundColor = "rgb"+Color; //changes the color of relevant points
+            Color = `(${c/2}, ${c/1.2}, ${c/2})`;            
+            drawCanvasPixel(r, PointInColumnIndex, Color);
         }
-
         ra+=DR/(numberOfRays/FOV); if(ra<0) {ra+=2*PI;} if(ra>2*PI) {ra-=2*PI;}
     }
 }
@@ -178,23 +163,23 @@ function drawRays3D() {
 
 let mapX=8,mapY=8,mapS=64;
 let mapW = [ //map of the walls
-    3,3,3,3,3,3,3,3, 
-    3,0,0,0,0,0,0,3, 
-    3,0,0,0,0,0,0,4, 
-    3,0,0,0,0,0,0,3, 
-    3,0,0,0,2,2,2,3, 
-    3,0,0,0,4,0,0,3, 
-    3,0,0,0,2,0,0,3, 
-    3,3,3,3,3,3,3,3,
+    2,2,2,2,2,4,2,2, 
+    2,0,0,0,3,0,0,2, 
+    2,0,0,0,0,1,0,4, 
+    4,0,0,0,0,1,0,2, 
+    2,0,4,2,0,0,0,2, 
+    2,0,0,0,0,3,0,2, 
+    2,0,0,0,3,0,0,2, 
+    2,2,2,2,2,2,2,2,
 ];
 
 let mapF = [ //map of floor
     0,0,0,0,0,0,0,0, 
-    0,1,1,2,2,2,2,0, 
-    0,1,1,2,2,2,2,0, 
-    0,2,1,2,2,2,2,0, 
-    0,2,1,2,0,0,0,0, 
-    0,2,1,1,0,0,0,0, 
+    0,2,2,2,2,2,2,0, 
+    0,2,2,2,2,2,2,0, 
+    0,2,2,2,2,2,2,0, 
+    0,2,2,2,0,0,0,0, 
+    0,2,2,2,0,0,0,0, 
     0,2,2,2,0,0,0,0, 
     0,0,0,0,0,0,0,0,
 ]
@@ -202,9 +187,9 @@ let mapF = [ //map of floor
 let mapC = [ //map of ceiling
     0,0,0,0,0,0,0,0, 
     0,0,0,0,0,0,0,0, 
-    0,0,0,0,0,0,0,0, 
-    0,0,0,0,0,0,0,0, 
-    0,0,0,0,0,0,0,0, 
+    0,0,0,0,3,0,0,0, 
+    0,0,0,0,3,0,0,0, 
+    0,0,0,0,3,0,0,0, 
     0,0,0,0,0,0,0,0, 
     0,0,0,0,0,0,0,0, 
     0,0,0,0,0,0,0,0,
@@ -360,11 +345,12 @@ let All_Textures = [ //all 32x32 textures
     0,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,0,
 ]
 
-//Updates every 1ms
-let mainLoop = setInterval(() => {
-    
+//Updates every when the browser wants to
+function frame() {   
     Movement();
     drawRays3D();
     Interactions();
-    
-}, 5);
+    requestAnimationFrame(frame);
+}
+
+requestAnimationFrame(frame);
