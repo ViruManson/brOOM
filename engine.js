@@ -8,12 +8,13 @@ const numberOfRays = 100; //Can be changed to increase "resolution on the walls"
 const FOV = 60; //kind of but not really
 const canvas = document.getElementById("screen");
 const ctx = canvas.getContext("2d", { alpha: false });
-
-
+const floorOffset =  48.375 * numberOfRays/100 //48.375 for 100 rays
 
 //with 100 rays, resolution becomes 1280x720
-const pointWidth = 12.8
-const pointHeight = 7.2
+const pointWidth = 1280/numberOfRays
+const pointHeight = 720/numberOfRays
+
+
 
 function fixAng(input) {
     if(input<   0) {input+=2*PI;}
@@ -70,7 +71,7 @@ function dist(ax,ay,bx,by,ang) {
 
 function drawCanvasPixel(x, y, Color) {
     ctx.fillStyle = "rgb"+Color;
-    ctx.fillRect(x*pointWidth, y*pointHeight, pointWidth, pointHeight);
+    ctx.fillRect(x*pointWidth, y*pointHeight, pointWidth+1, pointHeight+1);
     ctx.fillStyle = "rgb(0,0,0)"; //reverts color to black after a fill. Which tixes it in some way
 }
 
@@ -116,7 +117,8 @@ function drawRays3D() {
         let lineH=(mapS*100)/disT;
         let ty_step = 32/lineH*100/numberOfRays;
         let ty_off = 0;
-        if(lineH>100) {ty_off = (lineH-100)/2; lineH=100;} //line height
+
+        //if(lineH>100) {ty_off = (lineH-100)/2; lineH=100;} //line height // was not needed for some reason. only caused distortion. 100 can be increseed for less distortion
         
         //adds texture to the walls, also fixes their dirrection and shading
         let ty = ty_off*ty_step+hmt*32;
@@ -138,8 +140,8 @@ function drawRays3D() {
         // ----Draw floors----
         for(let PointInColumnIndex = numberOfRays/2 + Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex < numberOfRays; PointInColumnIndex++) {
             let dy=PointInColumnIndex-(numberOfRays/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
-            tx=px/2 + Math.cos(deg)*48.375*32/dy/raFix;
-            ty=py/2 + Math.sin(deg)*48.375*32/dy/raFix;
+            tx=px/2 + Math.cos(deg)*floorOffset*32/dy/raFix;
+            ty=py/2 + Math.sin(deg)*floorOffset*32/dy/raFix;
             let mp=mapF[Math.floor(ty/32)*mapX+Math.floor(tx/32)]*32*32
             let c = 255/All_Textures[(Math.floor(ty)&31)*32 + (Math.floor(tx)&31)+mp] * 0.7; //changes colors of the current point to the right value form the texture map
             Color = `(${c/1.3}, ${c/1.3}, ${c})`;
@@ -149,8 +151,8 @@ function drawRays3D() {
         //----Draw ceiling----
         for(let PointInColumnIndex = 0; PointInColumnIndex < numberOfRays/2 - Math.floor(lineH/100*numberOfRays/2); PointInColumnIndex++) {
             let dy=PointInColumnIndex-(numberOfRays/2), deg=ra, raFix = Math.cos(fixAng(pa-ra));
-            tx=px/2 - Math.cos(deg)*48.375*32/dy/raFix;
-            ty=py/2 - Math.sin(deg)*48.375*32/dy/raFix;
+            tx=px/2 - Math.cos(deg)*floorOffset*32/dy/raFix;
+            ty=py/2 - Math.sin(deg)*floorOffset*32/dy/raFix;
             let mp=mapC[Math.floor(ty/32)*mapX+Math.floor(tx/32)]*32*32
             let c = 255/All_Textures[(Math.floor(ty)&31)*32 + (Math.floor(tx)&31)+mp] * 0.7; //changes colors of the current point to the right value form the texture map
             Color = `(${c/2}, ${c/1.2}, ${c/2})`;            
@@ -161,7 +163,7 @@ function drawRays3D() {
 }
 
 
-let mapX=8,mapY=8,mapS=64;
+let mapX=8,mapY=8,mapS=mapX*mapY;
 let mapW = [ //map of the walls
     2,2,2,2,2,4,2,2, 
     2,0,0,0,3,0,0,2, 
@@ -273,12 +275,12 @@ let All_Textures = [ //all 32x32 textures
     //Window
     1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 
     1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,  
-    1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,  
-    1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,  
-    1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 
-    1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,
-    1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 
-    1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,    
+    1,0,1,0,1,0,1,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,  
+    1,1,0,1,0,1,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,  
+    1,0,1,0,1,0,1,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 
+    1,1,0,1,0,1,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,
+    1,0,1,0,1,0,1,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 
+    1,1,0,1,0,1,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,    
         
     1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,  
     1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1,  
