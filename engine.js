@@ -6,13 +6,25 @@ const P3 = 3*PI/2
 const DR = 0.0174533 //one degree in radians
 const numberOfRays = 100; //Can be changed to increase "resolution on the walls"     //but actually should be 100 so that the textures arent messed up.
 const FOV = 60; //kind of but not really
-const canvas = document.getElementById("screen");
+const canvas1 = document.getElementById("screen1");
+const canvas2 = document.getElementById("screen2");
+const canvas3 = document.getElementById("screen3");
+const canvas4 = document.getElementById("screen4");
+
 const ctx = canvas.getContext("2d", { alpha: false });
-const floorOffset =  48.375 * numberOfRays/100 //48.375 for 100 rays
+const floorOffset =  48.375 * numberOfRays/100; //48.375 for 100 rays
 
 //with 100 rays, resolution becomes 1280x720
-const pointWidth = 1280/numberOfRays
-const pointHeight = 720/numberOfRays
+const pointWidth = 1280/numberOfRays;
+const pointHeight = 720/numberOfRays;
+
+const canvasies = 2;
+
+//-- create canvases --
+
+document.createElement("canvas");
+
+
 
 
 
